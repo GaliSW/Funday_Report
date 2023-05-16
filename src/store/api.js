@@ -8,6 +8,8 @@ export const useApiStore = defineStore("apiStore", () => {
     const groupModel = ref([]);
     const sDate = ref(new Date());
     const eDate = ref(new Date());
+    const sDateSales = ref(new Date());
+    const eDateSales = ref(new Date());
     const navData = ref();
     //report original store
     const channelData = ref();
@@ -91,8 +93,8 @@ export const useApiStore = defineStore("apiStore", () => {
     //Get channel sales data
     const getChannelSalesData = () => {
         return new Promise((resolve, reject) => {
-            const s = sDate.value;
-            const e = eDate.value;
+            const s = sDateSales.value;
+            const e = eDateSales.value;
             const idArr = channelModel.value.sort().toString();
             let start = `${s.getFullYear()}-${s.getMonth() + 1}-${s.getDate()}`;
             let end;
@@ -159,6 +161,9 @@ export const useApiStore = defineStore("apiStore", () => {
                 Object.assign(el, reportChannelSalesData.value[indx])
             );
         });
+        reportChannelMixData.value.sort((a, b) => {
+            return a.joinTotal < b.joinTotal ? 1 : -1;
+        });
         loader.value = false;
     };
 
@@ -213,8 +218,8 @@ export const useApiStore = defineStore("apiStore", () => {
     //Get channel sales data
     const getGroupSalesData = () => {
         return new Promise((resolve, reject) => {
-            const s = sDate.value;
-            const e = eDate.value;
+            const s = sDateSales.value;
+            const e = eDateSales.value;
             const idArr = groupModel.value.sort().toString();
             let start = `${s.getFullYear()}-${s.getMonth() + 1}-${s.getDate()}`;
             let end;
@@ -263,10 +268,10 @@ export const useApiStore = defineStore("apiStore", () => {
                 if (adsSalesData.value[j]) {
                     if (adsSalesData.value[j].groupId === groupModel.value[i]) {
                         adsSalesArr = [...adsSalesArr, adsSalesData.value[j]];
-                        adsSalesArr[j]["contractCR"] =
-                            (adsSalesArr[j].salesContract /
-                                reportAdsData.value[j].joinTotal) *
-                            100;
+                        // adsSalesArr[j]["contractCR"] =
+                        //     (adsSalesArr[j].salesContract /
+                        //         reportAdsData.value[j].joinTotal) *
+                        //     100;
                     }
                 }
             }
@@ -280,6 +285,13 @@ export const useApiStore = defineStore("apiStore", () => {
                 Object.assign(el, reportAdsSalesData.value[indx])
             );
         });
+        reportAdsMixData.value.sort((a, b) => {
+            return a.joinTotal < b.joinTotal ? 1 : -1;
+        });
+        reportAdsMixData.value.forEach((el) => {
+            el["contractCR"] = (el.salesContract / el.joinTotal) * 100;
+        });
+
         loader.value = false;
     };
 
@@ -337,9 +349,23 @@ export const useApiStore = defineStore("apiStore", () => {
                         totalData.value = res.data.data[0];
                     }
                 });
+
+            const sSales = sDateSales.value;
+            const eSales = eDateSales.value;
+            let salesStart = `${sSales.getFullYear()}-${
+                sSales.getMonth() + 1
+            }-${sSales.getDate()}`;
+            let salesEnd;
+            if (e) {
+                salesEnd = `${eSales.getFullYear()}-${
+                    eSales.getMonth() + 1
+                }-${eSales.getDate()}`;
+            } else {
+                salesEnd = salesStart;
+            }
             axios
                 .get(
-                    `http://192.168.11.65:8000/MKT/report/total-s?sdate=${start}&edate=${end}&channelId=${idArr}`
+                    `http://192.168.11.65:8000/MKT/report/total-s?sdate=${salesStart}&edate=${salesEnd}&channelId=${idArr}`
                 )
                 .then((res) => {
                     if (res.data == "") {
@@ -391,9 +417,23 @@ export const useApiStore = defineStore("apiStore", () => {
                         totalAdsData.value = res.data.data[0];
                     }
                 });
+
+            const sSales = sDateSales.value;
+            const eSales = eDateSales.value;
+            let salesStart = `${sSales.getFullYear()}-${
+                sSales.getMonth() + 1
+            }-${sSales.getDate()}`;
+            let salesEnd;
+            if (e) {
+                salesEnd = `${eSales.getFullYear()}-${
+                    eSales.getMonth() + 1
+                }-${eSales.getDate()}`;
+            } else {
+                salesEnd = salesStart;
+            }
             axios
                 .get(
-                    `http://192.168.11.65:8000/MKT/report/total-s?sdate=${start}&edate=${end}&groupId=${idArr}`
+                    `http://192.168.11.65:8000/MKT/report/total-s?sdate=${salesStart}&edate=${salesEnd}&groupId=${idArr}`
                 )
                 .then((res) => {
                     if (res.data == "") {
@@ -413,6 +453,33 @@ export const useApiStore = defineStore("apiStore", () => {
                     resolve();
                 });
         });
+    };
+
+    //*========= 排序 ========
+    const fnChannleSort = (key, status) => {
+        loader.value = true;
+        if (type.value === 1) {
+            if (status === 0) {
+                reportChannelMixData.value.sort((a, b) => {
+                    return a[key] < b[key] ? 1 : -1;
+                });
+            } else {
+                reportChannelMixData.value.sort((a, b) => {
+                    return a[key] > b[key] ? 1 : -1;
+                });
+            }
+        } else {
+            if (status === 0) {
+                reportAdsMixData.value.sort((a, b) => {
+                    return a[key] < b[key] ? 1 : -1;
+                });
+            } else {
+                reportAdsMixData.value.sort((a, b) => {
+                    return a[key] > b[key] ? 1 : -1;
+                });
+            }
+        }
+        loader.value = false;
     };
 
     return {
@@ -440,6 +507,9 @@ export const useApiStore = defineStore("apiStore", () => {
         getChannelData,
         callChannelData,
         callGroupData,
+        fnChannleSort,
         channelData,
+        sDateSales,
+        eDateSales,
     };
 });

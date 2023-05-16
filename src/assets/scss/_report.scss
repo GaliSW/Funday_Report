@@ -79,9 +79,33 @@
             font-size: 14px;
             color: #E6E6E6;
             cursor: default;
-            height: 64px;
+            height: 70px;
         }
-        
+        table tbody .th_name{
+            max-width: 100px;
+            padding: 0 24px;
+            position: relative;
+            i{
+                cursor:zoom-in;
+                position: absolute;
+                left: 0;
+                top: 50%;
+                font-size: 18px;
+                transform: translateY(-50%);
+                -webkit-transform: translateY(-50%);
+                -moz-transform: translateY(-50%);
+                -ms-transform: translateY(-50%);
+                -o-transform: translateY(-50%);
+            }
+            img{
+                position: absolute;
+                width: 300px;
+                left: 20px;
+                top: 0;
+                display: none;
+                z-index: 2;
+            }
+        }
         table tr:nth-child(even) {
             background: rgba(255, 255, 255, 0.1);
         }
@@ -105,7 +129,7 @@
             }
         }
     }
-    .member_table{
+    .member_table table{
         border-right: 1.5px dashed #fff;
     }
 }

@@ -102,7 +102,7 @@ const chartOptions = computed(() => ({
             beginAtZero: true,
             ticks: {
                 color: '#fff', font: {
-                    size: 16,
+                    size: 12,
                 }
             },
         }
@@ -140,7 +140,7 @@ const pieOptions = ref({
             display: true,
             align: 'end',
             anchor: "center",
-            color: "#000",
+            color: "#fff",
             borderRadius: 1,
             font: {
                 size: 12,
@@ -148,8 +148,8 @@ const pieOptions = ref({
                 color: '#fff',
             },
             formatter: (value) => {
-                return value + '%';
-            },
+                return value > 0 ? value + '%' : '';
+            }
         },
         title: {
             display: true,
@@ -167,12 +167,28 @@ const pieOptions = ref({
 const channelModel = computed(() => {
     return api.channelModel
 })
+const groupModel = computed(() => {
+    return api.groupModel
+})
 const dateRange = computed(() => {
     const arr = [api.sDate, api.eDate]
     return arr
 })
 
 watch(channelModel, () => {
+    barRender.value = false
+    barNameArr.value = [];
+    barResultArr.value = [];
+    barRandomColor.value = [];
+    pieRender.value = false
+    pieNameArr.value = [];
+    pieResultArr.value = [];
+    pieRandomColor.value = [];
+    setTimeout(() => {
+        setChart()
+    }, 500)
+})
+watch(groupModel, () => {
     barRender.value = false
     barNameArr.value = [];
     barResultArr.value = [];
@@ -198,35 +214,33 @@ watch(dateRange, () => {
         setChart()
     }, 500)
 })
-// const type = computed(() => {
-//     return api.type;
-// })
 
-// watch(type, () => {
-//     barRender.value = false
-//     barNameArr.value = [];
-//     barResultArr.value = [];
-//     barRandomColor.value = [];
-//     pieRender.value = false
-//     pieNameArr.value = [];
-//     pieResultArr.value = [];
-//     pieRandomColor.value = [];
-// })
 
 const setChart = () => {
     if (api.type === 1) {
-        reportData.value = api.reportChannelData;
+        reportData.value = api.reportChannelMixData;
+        reportData.value.forEach((el) => {
+            barNameArr.value.push(el.name)
+            barResultArr.value.push(el.joinTotal)
+            barRandomColor.value.push(dynamicColors());
+
+            pieNameArr.value.push(el.name)
+            pieResultArr.value.push(((el.joinTotal / api.totalData.joinTotal) * 100).toFixed(2))
+            pieRandomColor.value.push(dynamicColors());
+        })
     } else {
-        reportData.value = api.reportAdsData;
+        reportData.value = api.reportAdsMixData;
+        reportData.value.forEach((el, indx) => {
+            if (indx > 9) return;
+            barNameArr.value.push(el.adName)
+            barResultArr.value.push(el.joinTotal)
+            barRandomColor.value.push(dynamicColors());
+
+            pieNameArr.value.push(el.adName)
+            pieResultArr.value.push(((el.joinTotal / api.totalAdsData.joinTotal) * 100).toFixed(2))
+            pieRandomColor.value.push(dynamicColors());
+        })
     }
-    reportData.value.forEach((el) => {
-        barNameArr.value.push(el.name)
-        pieNameArr.value.push(el.name)
-        barResultArr.value.push(el.joinTotal)
-        pieResultArr.value.push(((el.joinTotal / api.totalData.joinTotal) * 100).toFixed(2))
-        barRandomColor.value.push(dynamicColors());
-        pieRandomColor.value.push(dynamicColors());
-    })
     pieRender.value = true
     barRender.value = true
 }
