@@ -3,6 +3,7 @@ import { defineStore } from "pinia";
 import axios from "axios";
 export const useApiStore = defineStore("apiStore", () => {
     const loader = ref(false);
+    const chart = ref(false);
     const type = ref(1); // 1=群組 2=通路
     const channelModel = ref([]);
     const groupModel = ref([]);
@@ -116,6 +117,7 @@ export const useApiStore = defineStore("apiStore", () => {
 
     //set all channel data
     const callChannelData = async () => {
+        chart.value = false;
         loader.value = true;
         await getChannelData();
         await getChannelSalesData();
@@ -164,6 +166,7 @@ export const useApiStore = defineStore("apiStore", () => {
         reportChannelMixData.value.sort((a, b) => {
             return a.joinTotal < b.joinTotal ? 1 : -1;
         });
+        chart.value = true;
         loader.value = false;
     };
 
@@ -242,6 +245,7 @@ export const useApiStore = defineStore("apiStore", () => {
     //set all channel data
     const callGroupData = async () => {
         loader.value = true;
+        chart.value = false;
         await getGroupData();
         await getGroupSalesData();
         await getGroupTotal();
@@ -292,6 +296,7 @@ export const useApiStore = defineStore("apiStore", () => {
             el["contractCR"] = (el.salesContract / el.joinTotal) * 100;
         });
 
+        chart.value = true;
         loader.value = false;
     };
 
@@ -511,5 +516,6 @@ export const useApiStore = defineStore("apiStore", () => {
         channelData,
         sDateSales,
         eDateSales,
+        chart,
     };
 });

@@ -1,16 +1,16 @@
 import { defineConfig } from "vite";
 import { fileURLToPath, URL } from "node:url";
-import legacy from "@vitejs/plugin-legacy";
 import vue from "@vitejs/plugin-vue";
+const { resolve } = require("path");
 
+// https://vitejs.dev/config/
 export default defineConfig({
     base: "./",
+    plugins: [vue()],
     resolve: {
         alias: {
+            // "@": resolve(__dirname, "src"),
             "@": fileURLToPath(new URL("./src", import.meta.url)),
         },
     },
-    sourcemap: false,
-    minify: "terser",
-    plugins: [legacy({ targets: ["defaults", "not IE 11"] }), vue()],
 });

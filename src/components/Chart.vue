@@ -164,56 +164,28 @@ const pieOptions = ref({
         padding: 20
     }
 })
-const channelModel = computed(() => {
-    return api.channelModel
-})
-const groupModel = computed(() => {
-    return api.groupModel
-})
-const dateRange = computed(() => {
-    const arr = [api.sDate, api.eDate]
-    return arr
+
+const chartCanDraw = computed(() => {
+    return api.chart
 })
 
-watch(channelModel, () => {
-    barRender.value = false
-    barNameArr.value = [];
-    barResultArr.value = [];
-    barRandomColor.value = [];
-    pieRender.value = false
-    pieNameArr.value = [];
-    pieResultArr.value = [];
-    pieRandomColor.value = [];
-    setTimeout(() => {
-        setChart()
-    }, 500)
+watch(chartCanDraw, () => {
+    if (chartCanDraw.value) {
+        barRender.value = false
+        barNameArr.value = [];
+        barResultArr.value = [];
+        barRandomColor.value = [];
+        pieRender.value = false
+        pieNameArr.value = [];
+        pieResultArr.value = [];
+        pieRandomColor.value = [];
+        setTimeout(() => {
+            setChart()
+        }, 500)
+    }
 })
-watch(groupModel, () => {
-    barRender.value = false
-    barNameArr.value = [];
-    barResultArr.value = [];
-    barRandomColor.value = [];
-    pieRender.value = false
-    pieNameArr.value = [];
-    pieResultArr.value = [];
-    pieRandomColor.value = [];
-    setTimeout(() => {
-        setChart()
-    }, 500)
-})
-watch(dateRange, () => {
-    barRender.value = false
-    barNameArr.value = [];
-    barResultArr.value = [];
-    barRandomColor.value = [];
-    pieRender.value = false
-    pieNameArr.value = [];
-    pieResultArr.value = [];
-    pieRandomColor.value = [];
-    setTimeout(() => {
-        setChart()
-    }, 500)
-})
+
+
 
 
 const setChart = () => {
@@ -230,12 +202,11 @@ const setChart = () => {
         })
     } else {
         reportData.value = api.reportAdsMixData;
-        reportData.value.forEach((el, indx) => {
+        api.reportAdsMixData.forEach((el, indx) => {
             if (indx > 9) return;
             barNameArr.value.push(el.adName)
             barResultArr.value.push(el.joinTotal)
             barRandomColor.value.push(dynamicColors());
-
             pieNameArr.value.push(el.adName)
             pieResultArr.value.push(((el.joinTotal / api.totalAdsData.joinTotal) * 100).toFixed(2))
             pieRandomColor.value.push(dynamicColors());

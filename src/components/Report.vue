@@ -103,7 +103,7 @@
                             <td class="th_name">
                                 <i class="fa-regular fa-image" :id="'icon' + index" v-if="item.adImg"
                                     @mouseover="enlargeImage(index)" @mouseout="shrinkImage(index)"></i>
-                                <img :src="item.adImg" :id="'img' + index" @error="handlerError(index)" v-if="item.adImg" />
+                                <!-- <img :src="item.adImg" :id="'img' + index" @error="handlerError(index)" v-if="item.adImg" /> -->
                                 {{ item.adName }}
                             </td>
                             <td>{{ item.clicksPC + item.clicksMB }}</td>
