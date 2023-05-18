@@ -2,52 +2,74 @@
     <section id="report">
         <div class="head">
             <div class="total_count" v-if="api.type === 1">
-                <div class="flag">
-                    <div>註冊數</div>
-                    <span>{{ api.totalData.joinTotal }}</span>
+                <div class="ads_total">
+                    <div class="flag">
+                        <div>點擊數</div>
+                        <span>{{ api.totalData.clicksTotal }}</span>
+                    </div>
+                    <div class="flag">
+                        <div>註冊數</div>
+                        <span>{{ api.totalData.joinTotal }}</span>
+                    </div>
+                    <div class="flag">
+                        <div>註冊率</div>
+                        <span>{{ api.totalData.joinCR.toFixed(2) }}%</span>
+                    </div>
                 </div>
-                <div class="flag">
-                    <div>註冊率</div>
-                    <span>{{ api.totalData.joinCR.toFixed(2) }}%</span>
-                </div>
-                <div class="flag">
-                    <div>DEMO數</div>
-                    <span>{{ api.totalSalesData.salesDemo
-                    }}</span>
-                </div>
-                <div class="flag">
-                    <div>合約數</div>
-                    <span>{{ api.totalSalesData.salesContract
-                    }}</span>
-                </div>
-                <div class="flag">
-                    <div>轉換率</div>
-                    <span v-if="isNaN(api.totalSalesData.contractCR)">0%</span>
-                    <span v-else>{{ api.totalSalesData.contractCR.toFixed(2) }}%</span>
+                <div class="sales_total">
+                    <div class="flag">
+                        <div>DEMO數</div>
+                        <span>{{ api.totalSalesData.salesDemo
+                        }}</span>
+                    </div>
+                    <div class="flag">
+                        <div>合約數</div>
+                        <span>{{ api.totalSalesData.salesContract
+                        }}</span>
+                    </div>
+                    <div class="flag">
+                        <div>成交率</div>
+                        <span v-if="isNaN(api.totalSalesData.contractCR)">0%</span>
+                        <span v-if="api.totalSalesData.contractCR == 'Infinity'">-</span>
+                        <span v-if="api.totalSalesData.contractCR >= 0 && api.totalSalesData.contractCR != 'Infinity'">{{
+                            api.totalSalesData.contractCR.toFixed(2) }}%</span>
+                    </div>
                 </div>
             </div>
             <div class="total_count" v-else>
-                <div class="flag">
-                    <div>註冊數</div>
-                    <span>{{ api.totalAdsData.joinTotal }}</span>
+                <div class="ads_total">
+                    <div class="flag">
+                        <div>點擊數</div>
+                        <span>{{ api.totalAdsData.clicksTotal }}</span>
+                    </div>
+                    <div class="flag">
+                        <div>註冊數</div>
+                        <span>{{ api.totalAdsData.joinTotal }}</span>
+                    </div>
+                    <div class="flag">
+                        <div>註冊率</div>
+                        <span>{{ api.totalAdsData.joinCR.toFixed(2) }}%</span>
+                    </div>
                 </div>
-                <div class="flag">
-                    <div>註冊率</div>
-                    <span>{{ api.totalAdsData.joinCR.toFixed(2) }}%</span>
-                </div>
-                <div class="flag">
-                    <div>DEMO數</div>
-                    <span>{{ api.totalAdsSalesData.salesDemo
-                    }}</span>
-                </div>
-                <div class="flag">
-                    <div>合約數</div>
-                    <span>{{ api.totalAdsSalesData.salesContract
-                    }}</span>
-                </div>
-                <div class="flag">
-                    <div>轉換率</div>
-                    <span>{{ api.totalAdsSalesData.contractCR.toFixed(2) }}%</span>
+                <div class="sales_total">
+                    <div class="flag">
+                        <div>DEMO數</div>
+                        <span>{{ api.totalAdsSalesData.salesDemo
+                        }}</span>
+                    </div>
+                    <div class="flag">
+                        <div>合約數</div>
+                        <span>{{ api.totalAdsSalesData.salesContract
+                        }}</span>
+                    </div>
+                    <div class="flag">
+                        <div>成交率</div>
+                        <span v-if="isNaN(api.totalAdsSalesData.contractCR)">0%</span>
+                        <span v-if="api.totalAdsSalesData.contractCR == 'Infinity'">-</span>
+                        <span
+                            v-if="api.totalAdsSalesData.contractCR >= 0 && api.totalAdsSalesData.contractCR != 'Infinity'">{{
+                                api.totalAdsSalesData.contractCR.toFixed(2) }}%</span>
+                    </div>
                 </div>
             </div>
         </div>
@@ -68,25 +90,31 @@
                             <th @click="channelAdsSort">
                                 <p>廣告連結<br>
                                     點擊數
+                                    <i class="fa-solid fa-sort" v-if="channel_sort_type !== 'ads'"></i>
+                                    <i class="fa-solid fa-sort-down"
+                                        v-if="channel_ads_sort == 0 && channel_sort_type == 'ads'"></i>
                                     <i class="fa-solid fa-sort-up"
-                                        v-if="channel_ads_sort == 0 || channel_sort_type !== 'ads'"></i>
-                                    <i class="fa-solid fa-sort-down" v-else></i>
+                                        v-if="channel_ads_sort == 1 && channel_sort_type == 'ads'"></i>
                                 </p>
                             </th>
                             <th @click="channelJoinSort">
                                 <p>註冊數total<br>
                                     (桌機/手機)
+                                    <i class="fa-solid fa-sort" v-if="channel_sort_type !== 'join'"></i>
+                                    <i class="fa-solid fa-sort-down"
+                                        v-if="channel_join_sort == 0 && channel_sort_type == 'join'"></i>
                                     <i class="fa-solid fa-sort-up"
-                                        v-if="channel_join_sort == 0 || channel_sort_type !== 'join'"></i>
-                                    <i class="fa-solid fa-sort-down" v-else></i>
+                                        v-if="channel_join_sort == 1 && channel_sort_type == 'join'"></i>
                                 </p>
                             </th>
                             <th @click="channelJoinCRSort">
                                 <p>註冊率<br>
                                     (註冊/點擊)
+                                    <i class="fa-solid fa-sort" v-if="channel_sort_type !== 'joinCR'"></i>
+                                    <i class="fa-solid fa-sort-down"
+                                        v-if="channel_joinCR_sort == 0 && channel_sort_type == 'joinCR'"></i>
                                     <i class="fa-solid fa-sort-up"
-                                        v-if="channel_joinCR_sort == 0 || channel_sort_type !== 'joinCR'"></i>
-                                    <i class="fa-solid fa-sort-down" v-else></i>
+                                        v-if="channel_joinCR_sort == 1 && channel_sort_type == 'joinCR'"></i>
                                 </p>
                             </th>
                         </tr>
@@ -97,18 +125,20 @@
                             <td>{{ item.clicksTotal }}</td>
                             <td>{{ item.joinTotal }}<br>{{ item.joinPC
                             }}&nbsp;/&nbsp;{{ item.joinMB }}</td>
-                            <td>{{ item.joinCR.toFixed(2) + '%' }}</td>
+                            <td :class="[{ red: item.joinCR < 1 }, { green: item.joinCR > 2 }]">{{ item.joinCR.toFixed(2) +
+                                '%' }}</td>
                         </tr>
                         <tr v-for="(item, index) in api.reportAdsMixData" v-else>
                             <td class="th_name">
                                 <i class="fa-regular fa-image" :id="'icon' + index" v-if="item.adImg"
                                     @mouseover="enlargeImage(index)" @mouseout="shrinkImage(index)"></i>
-                                <!-- <img :src="item.adImg" :id="'img' + index" @error="handlerError(index)" v-if="item.adImg" /> -->
+                                <img :src="item.adImg" :id="'img' + index" @error="handlerError(index)" v-if="item.adImg" />
                                 {{ item.adName }}
                             </td>
                             <td>{{ item.clicksPC + item.clicksMB }}</td>
                             <td>{{ item.joinTotal }}<br>{{ item.joinPC }}&nbsp;/&nbsp;{{ item.joinMB }}</td>
-                            <td>{{ item.joinCR.toFixed(2) + '%' }}</td>
+                            <td :class="[{ red: item.joinCR < 1 }, { green: item.joinCR > 2 }]">{{ item.joinCR.toFixed(2) +
+                                '%' }}</td>
                         </tr>
                     </tbody>
                 </table>
@@ -125,32 +155,40 @@
                             <th @click="channelDemoSort">
                                 <p>電銷<br>
                                     DEMO數
+                                    <i class="fa-solid fa-sort" v-if="channel_sort_type !== 'demo'"></i>
+                                    <i class="fa-solid fa-sort-down"
+                                        v-if="channel_demo_sort == 0 && channel_sort_type == 'demo'"></i>
                                     <i class="fa-solid fa-sort-up"
-                                        v-if="channel_demo_sort == 0 || channel_sort_type !== 'demo'"></i>
-                                    <i class="fa-solid fa-sort-down" v-else></i>
+                                        v-if="channel_demo_sort == 1 && channel_sort_type == 'demo'"></i>
                                 </p>
                             </th>
                             <th @click="channelContractSort">
                                 <p>電銷<br>
                                     合約數
+                                    <i class="fa-solid fa-sort" v-if="channel_sort_type !== 'contract'"></i>
+                                    <i class="fa-solid fa-sort-down"
+                                        v-if="channel_contract_sort == 0 && channel_sort_type == 'contract'"></i>
                                     <i class="fa-solid fa-sort-up"
-                                        v-if="channel_contract_sort == 0 || channel_sort_type !== 'contract'"></i>
-                                    <i class="fa-solid fa-sort-down" v-else></i>
+                                        v-if="channel_contract_sort == 1 && channel_sort_type == 'contract'"></i>
                                 </p>
                             </th>
                             <th @click="channelAmountSort">
                                 <p>成交金額
+                                    <i class="fa-solid fa-sort" v-if="channel_sort_type !== 'amount'"></i>
+                                    <i class="fa-solid fa-sort-down"
+                                        v-if="channel_amount_sort == 0 && channel_sort_type == 'amount'"></i>
                                     <i class="fa-solid fa-sort-up"
-                                        v-if="channel_amount_sort == 0 || channel_sort_type !== 'amount'"></i>
-                                    <i class="fa-solid fa-sort-down" v-else></i>
+                                        v-if="channel_amount_sort == 1 && channel_sort_type == 'amount'"></i>
                                 </p>
                             </th>
                             <th @click="channelContractCRSort">
-                                <p>轉換率<br>
+                                <p>成交率<br>
                                     (合約數/註冊數)
+                                    <i class="fa-solid fa-sort" v-if="channel_sort_type !== 'contractCR'"></i>
+                                    <i class="fa-solid fa-sort-down"
+                                        v-if="channel_contractCR_sort == 0 && channel_sort_type == 'contractCR'"></i>
                                     <i class="fa-solid fa-sort-up"
-                                        v-if="channel_contractCR_sort == 0 || channel_sort_type !== 'contractCR'"></i>
-                                    <i class="fa-solid fa-sort-down" v-else></i>
+                                        v-if="channel_contractCR_sort == 1 && channel_sort_type == 'contractCR'"></i>
                                 </p>
                             </th>
                         </tr>
@@ -159,20 +197,23 @@
                         <tr v-for="(item, index) in api.reportChannelMixData" v-if="api.type === 1">
                             <td>{{ item.salesDemo }}</td>
                             <td>{{ item.salesContract }}</td>
-                            <td>{{ item.salesAmount }}</td>
+                            <td>${{ numberFormat(item.salesAmount) }}</td>
                             <td v-if="isNaN(item.contractCR)">0.00%</td>
-                            <td v-else>
+                            <td v-if="item.contractCR == 'Infinity'">-</td>
+                            <td v-if="item.contractCR >= 0 && item.contractCR != 'Infinity'">
                                 {{ item.contractCR.toFixed(2) }}%
                             </td>
                         </tr>
                         <tr v-for="(item, index) in api.reportAdsMixData" v-else>
                             <td>{{ item.salesDemo }}</td>
                             <td>{{ item.salesContract }}</td>
-                            <td>{{ item.salesAmount }}</td>
+                            <td>${{ numberFormat(item.salesAmount) }}</td>
                             <td v-if="isNaN(item.contractCR)">0.00%</td>
-                            <td v-else>
+                            <td v-if="item.contractCR == 'Infinity'">-</td>
+                            <td v-if="item.contractCR >= 0 && item.contractCR != 'Infinity'">
                                 {{ item.contractCR.toFixed(2) }}%
                             </td>
+
                         </tr>
                     </tbody>
                 </table>
@@ -206,16 +247,23 @@ const listTitle = computed(() => {
     let name = api.type === 1 ? "通路" : "廣告"
     return name
 })
-
+const channelModel = computed(() => api.channelModel)
+const groupModel = computed(() => api.groupModel)
+watch(channelModel, () => {
+    channel_sort_type.value = "";
+})
+watch(groupModel, () => {
+    channel_sort_type.value = "";
+})
 
 watch(memberDate, () => {
-    if (memberDate.value.length > 1) {
-        salesDate.value = [memberDate.value[0], new Date()];
+    if (memberDate.value[1]) {
+        salesDate.value = [memberDate.value[0], memberDate.value[1]];
         startDate.value = memberDate.value[0];
         api.sDate = memberDate.value[0];
         api.eDate = memberDate.value[1];
-        api.sDateSales = salesDate.value[0];
-        api.eDateSales = salesDate.value[1];
+        api.sDateSales = memberDate.value[0];
+        api.eDateSales = memberDate.value[1];
     } else {
         api.sDate = memberDate.value[0];
         api.eDate = memberDate.value[0];
@@ -229,14 +277,17 @@ watch(memberDate, () => {
     }
 })
 watch(salesDate, () => {
-    if (salesDate.value.length > 1) {
+    if (salesDate.value[1]) {
         api.sDateSales = salesDate.value[0];
         api.eDateSales = salesDate.value[1];
-        if (api.type === 1) {
-            api.callChannelData();
-        } else {
-            api.callGroupData();
-        }
+    } else {
+        api.sDateSales = salesDate.value[0];
+        api.eDateSales = salesDate.value[0];
+    }
+    if (api.type === 1) {
+        api.callChannelData();
+    } else {
+        api.callGroupData();
     }
 })
 
@@ -347,5 +398,9 @@ const handlerError = (id) => {
     icon.style.display = "none";
 }
 
+const numberFormat = (num) => {
+    let internationalNumberFormat = new Intl.NumberFormat('en-US');
+    return internationalNumberFormat.format(num);
+}
 
 </script>

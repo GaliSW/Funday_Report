@@ -67,7 +67,7 @@ const chartOptions = computed(() => ({
         },
         title: {
             display: true,
-            text: '會員數排行',
+            text: '註冊數排行',
             color: "#fff",
             font: {
                 size: 24
@@ -153,7 +153,7 @@ const pieOptions = ref({
         },
         title: {
             display: true,
-            text: '會員數占比',
+            text: '註冊數占比',
             color: "#fff",
             font: {
                 size: 24
@@ -170,15 +170,15 @@ const chartCanDraw = computed(() => {
 })
 
 watch(chartCanDraw, () => {
+    barRender.value = false
+    barNameArr.value = [];
+    barResultArr.value = [];
+    barRandomColor.value = [];
+    pieRender.value = false
+    pieNameArr.value = [];
+    pieResultArr.value = [];
+    pieRandomColor.value = [];
     if (chartCanDraw.value) {
-        barRender.value = false
-        barNameArr.value = [];
-        barResultArr.value = [];
-        barRandomColor.value = [];
-        pieRender.value = false
-        pieNameArr.value = [];
-        pieResultArr.value = [];
-        pieRandomColor.value = [];
         setTimeout(() => {
             setChart()
         }, 500)
@@ -186,13 +186,11 @@ watch(chartCanDraw, () => {
 })
 
 
-
-
 const setChart = () => {
     if (api.type === 1) {
         reportData.value = api.reportChannelMixData;
-        reportData.value.forEach((el) => {
-            barNameArr.value.push(el.name)
+        reportData.value.forEach((el, num) => {
+            barNameArr.value.push(`${num + 1}.${el.name}`)
             barResultArr.value.push(el.joinTotal)
             barRandomColor.value.push(dynamicColors());
 
@@ -204,7 +202,7 @@ const setChart = () => {
         reportData.value = api.reportAdsMixData;
         api.reportAdsMixData.forEach((el, indx) => {
             if (indx > 9) return;
-            barNameArr.value.push(el.adName)
+            barNameArr.value.push(`${indx + 1}.${el.adName}`)
             barResultArr.value.push(el.joinTotal)
             barRandomColor.value.push(dynamicColors());
             pieNameArr.value.push(el.adName)

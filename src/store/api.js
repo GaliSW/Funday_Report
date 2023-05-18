@@ -58,7 +58,7 @@ export const useApiStore = defineStore("apiStore", () => {
     const getNavList = () => {
         return new Promise((resolve, reject) => {
             axios
-                .get(`http://192.168.11.65:8000/MKT/report/channel`)
+                .get(`https://mktapi.funday.asia:4433/MKT/report/channel`)
                 .then((res) => {
                     navData.value = res.data.channel;
                     resolve();
@@ -82,7 +82,7 @@ export const useApiStore = defineStore("apiStore", () => {
             }
             axios
                 .get(
-                    `http://192.168.11.65:8000/MKT/report/channel-list?sdate=${start}&edate=${end}&channelId=${idArr}`
+                    `https://mktapi.funday.asia:4433/MKT/report/channel-list?sdate=${start}&edate=${end}&channelId=${idArr}`
                 )
                 .then((res) => {
                     channelData.value = res.data.channel;
@@ -94,19 +94,36 @@ export const useApiStore = defineStore("apiStore", () => {
     //Get channel sales data
     const getChannelSalesData = () => {
         return new Promise((resolve, reject) => {
-            const s = sDateSales.value;
-            const e = eDateSales.value;
+            const sL = sDate.value;
+            const eL = eDate.value;
             const idArr = channelModel.value.sort().toString();
-            let start = `${s.getFullYear()}-${s.getMonth() + 1}-${s.getDate()}`;
-            let end;
-            if (e) {
-                end = `${e.getFullYear()}-${e.getMonth() + 1}-${e.getDate()}`;
+            let startL = `${sL.getFullYear()}-${
+                sL.getMonth() + 1
+            }-${sL.getDate()}`;
+            let endL;
+            if (eL) {
+                endL = `${eL.getFullYear()}-${
+                    eL.getMonth() + 1
+                }-${eL.getDate()}`;
             } else {
-                end = start;
+                endL = startL;
+            }
+            const sR = sDateSales.value;
+            const eR = eDateSales.value;
+            let startR = `${sR.getFullYear()}-${
+                sR.getMonth() + 1
+            }-${sR.getDate()}`;
+            let endR;
+            if (eR) {
+                endR = `${eR.getFullYear()}-${
+                    eR.getMonth() + 1
+                }-${eR.getDate()}`;
+            } else {
+                endR = startR;
             }
             axios
                 .get(
-                    `http://192.168.11.65:8000/MKT/report/channel-list-s?sdate=${start}&edate=${end}&channelId=${idArr}`
+                    `https://mktapi.funday.asia:4433/MKT/report/channel-list-s?sdate=${startL}&edate=${endL}&sdate2=${startR}&edate2=${endR}&channelId=${idArr}`
                 )
                 .then((res) => {
                     channelSalesData.value = res.data.channel;
@@ -117,6 +134,7 @@ export const useApiStore = defineStore("apiStore", () => {
 
     //set all channel data
     const callChannelData = async () => {
+        if (channelModel.value.length === 0) return;
         chart.value = false;
         loader.value = true;
         await getChannelData();
@@ -174,7 +192,7 @@ export const useApiStore = defineStore("apiStore", () => {
         if (channelModel.value.length > 0) {
             callChannelData();
         } else {
-            reportChannelData.value = [];
+            reportChannelMixData.value = [];
             reportChannelSalesData.value = [];
             totalData.value = {
                 clicksMB: 0,
@@ -190,6 +208,7 @@ export const useApiStore = defineStore("apiStore", () => {
                 salesDemo: 0,
                 contractCR: 0,
             };
+            chart.value = false;
         }
     });
 
@@ -209,7 +228,7 @@ export const useApiStore = defineStore("apiStore", () => {
             }
             axios
                 .get(
-                    `http://192.168.11.65:8000/MKT/report/group-list?sdate=${start}&edate=${end}&groupId=${idArr}`
+                    `https://mktapi.funday.asia:4433/MKT/report/group-list?sdate=${start}&edate=${end}&groupId=${idArr}`
                 )
                 .then((res) => {
                     adsData.value = res.data.ad;
@@ -221,19 +240,36 @@ export const useApiStore = defineStore("apiStore", () => {
     //Get channel sales data
     const getGroupSalesData = () => {
         return new Promise((resolve, reject) => {
-            const s = sDateSales.value;
-            const e = eDateSales.value;
             const idArr = groupModel.value.sort().toString();
-            let start = `${s.getFullYear()}-${s.getMonth() + 1}-${s.getDate()}`;
-            let end;
-            if (e) {
-                end = `${e.getFullYear()}-${e.getMonth() + 1}-${e.getDate()}`;
+            const sL = sDate.value;
+            const eL = eDate.value;
+            let startL = `${sL.getFullYear()}-${
+                sL.getMonth() + 1
+            }-${sL.getDate()}`;
+            let endL;
+            if (eL) {
+                endL = `${eL.getFullYear()}-${
+                    eL.getMonth() + 1
+                }-${eL.getDate()}`;
             } else {
-                end = start;
+                endL = startL;
+            }
+            const sR = sDateSales.value;
+            const eR = eDateSales.value;
+            let startR = `${sR.getFullYear()}-${
+                sR.getMonth() + 1
+            }-${sR.getDate()}`;
+            let endR;
+            if (eR) {
+                endR = `${eR.getFullYear()}-${
+                    eR.getMonth() + 1
+                }-${eR.getDate()}`;
+            } else {
+                endR = startR;
             }
             axios
                 .get(
-                    `http://192.168.11.65:8000/MKT/report/group-list-s?sdate=${start}&edate=${end}&groupId=${idArr}`
+                    `https://mktapi.funday.asia:4433/MKT/report/group-list-s?sdate=${startL}&edate=${endL}&sdate2=${startR}&edate2=${endR}&groupId=${idArr}`
                 )
                 .then((res) => {
                     adsSalesData.value = res.data.ad;
@@ -244,6 +280,7 @@ export const useApiStore = defineStore("apiStore", () => {
 
     //set all channel data
     const callGroupData = async () => {
+        if (groupModel.value.length === 0) return;
         loader.value = true;
         chart.value = false;
         await getGroupData();
@@ -320,6 +357,7 @@ export const useApiStore = defineStore("apiStore", () => {
                 salesDemo: 0,
                 contractCR: 0,
             };
+            chart.value = false;
         }
     });
 
@@ -337,7 +375,7 @@ export const useApiStore = defineStore("apiStore", () => {
             const idArr = channelModel.value.sort().toString();
             axios
                 .get(
-                    `http://192.168.11.65:8000/MKT/report/total?sdate=${start}&edate=${end}&channelId=${idArr}`
+                    `https://mktapi.funday.asia:4433/MKT/report/total?sdate=${start}&edate=${end}&channelId=${idArr}`
                 )
                 .then((res) => {
                     if (res.data == "") {
@@ -370,7 +408,7 @@ export const useApiStore = defineStore("apiStore", () => {
             }
             axios
                 .get(
-                    `http://192.168.11.65:8000/MKT/report/total-s?sdate=${salesStart}&edate=${salesEnd}&channelId=${idArr}`
+                    `https://mktapi.funday.asia:4433/MKT/report/total-s?sdate=${start}&edate=${end}&sdate2=${salesStart}&edate2=${salesEnd}&channelId=${idArr}`
                 )
                 .then((res) => {
                     if (res.data == "") {
@@ -403,9 +441,13 @@ export const useApiStore = defineStore("apiStore", () => {
                 end = start;
             }
             const idArr = groupModel.value.sort().toString();
+            if (idArr.length === 0) {
+                resolve();
+                return;
+            }
             axios
                 .get(
-                    `http://192.168.11.65:8000/MKT/report/total?sdate=${start}&edate=${end}&groupId=${idArr}`
+                    `https://mktapi.funday.asia:4433/MKT/report/total?sdate=${start}&edate=${end}&groupId=${idArr}`
                 )
                 .then((res) => {
                     if (res.data == "") {
@@ -438,7 +480,7 @@ export const useApiStore = defineStore("apiStore", () => {
             }
             axios
                 .get(
-                    `http://192.168.11.65:8000/MKT/report/total-s?sdate=${salesStart}&edate=${salesEnd}&groupId=${idArr}`
+                    `https://mktapi.funday.asia:4433/MKT/report/total-s?sdate=${start}&edate=${end}&sdate2=${salesStart}&edate2=${salesEnd}&groupId=${idArr}`
                 )
                 .then((res) => {
                     if (res.data == "") {
@@ -466,21 +508,21 @@ export const useApiStore = defineStore("apiStore", () => {
         if (type.value === 1) {
             if (status === 0) {
                 reportChannelMixData.value.sort((a, b) => {
-                    return a[key] < b[key] ? 1 : -1;
+                    return a[key] > b[key] ? 1 : -1;
                 });
             } else {
                 reportChannelMixData.value.sort((a, b) => {
-                    return a[key] > b[key] ? 1 : -1;
+                    return a[key] < b[key] ? 1 : -1;
                 });
             }
         } else {
             if (status === 0) {
                 reportAdsMixData.value.sort((a, b) => {
-                    return a[key] < b[key] ? 1 : -1;
+                    return a[key] > b[key] ? 1 : -1;
                 });
             } else {
                 reportAdsMixData.value.sort((a, b) => {
-                    return a[key] > b[key] ? 1 : -1;
+                    return a[key] < b[key] ? 1 : -1;
                 });
             }
         }

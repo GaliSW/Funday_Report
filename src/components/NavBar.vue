@@ -5,16 +5,19 @@
             <h1>廣告成效報表</h1>
         </div>
         <div class="channel">
-            <!-- <div class="type_tab">
-                <input type="radio" id="channel_compare" name="tab" checked>
-                <label for="channel_compare" @click="api.type = 1">通路</label>
-                <input type="radio" id="group_compare" name="tab">
-                <label for="group_compare" @click="api.type = 2">群組</label>
-            </div> -->
             <div class="channel_list" v-if="api.type === 1">
-                <div v-for="(item, index) in channelArr" @dblclick="api.type = 2, groupType = index">
-                    <input type="checkbox" :id="item.id" :value="item.id" v-model="api.channelModel">
+                <div class="channel_bar">
+                    <span>通路</span>
+                    <input type="checkbox" name="allChannel" id="allChannel" @click="selectAllChannel($event)">
+                    <label for="allChannel">全選</label>
+                </div>
+                <div v-for="(item, index) in channelArr" class="channel_btn">
+                    <input type="checkbox" :id="item.id" :value="item.id" v-model="api.channelModel"
+                        @change="checkChannelLength">
                     <label :for="item.id" class="group">{{ item.name }}</label>
+                    <div @click="api.type = 2, groupType = index">
+                        <i class="fa-solid fa-caret-right"></i>
+                    </div>
                 </div>
             </div>
             <div class="group_list" v-else>
@@ -25,7 +28,7 @@
                 </div>
                 <div class="group_bar">
                     <span>群組</span>
-                    <input type="checkbox" name="all" id="all" @click="selectAll($event)">
+                    <input type="checkbox" name="all" id="all" @click="selectAllGroup($event)">
                     <label for="all">全選</label>
                     <!-- <div class="tab opt3" data="Option 1">
                         <input type="checkbox" name="switch" id="switch" @click="selectAll($event)">
@@ -64,7 +67,32 @@ watch(groupType, () => {
     api.groupModel = [];
 })
 
-const selectAll = (e) => {
+const type = computed(() => api.type)
+watch(type, () => {
+    api.chart = false;
+    if (type.value === 1) {
+        setTimeout(() => {
+            checkChannelLength()
+        }, 300)
+    }
+    setTimeout(() => {
+        api.chart = true
+    }, 300)
+})
+const selectAllChannel = (e) => {
+    const status = e.target.checked
+    if (status) {
+        let arr = []
+        channelArr.value.forEach((el) => {
+            arr.push(el.id)
+        })
+        api.channelModel = arr;
+    } else {
+        api.channelModel = []
+    }
+}
+
+const selectAllGroup = (e) => {
     const status = e.target.checked
     if (status) {
         let arr = []
@@ -77,6 +105,13 @@ const selectAll = (e) => {
     }
 }
 
+const checkChannelLength = () => {
+    if (api.channelModel.length === channelArr.value.length) {
+        document.getElementById("allChannel").checked = true;
+    } else {
+        document.getElementById("allChannel").checked = false;
+    }
+}
 const checkLength = () => {
     if (api.groupModel.length === groupList.value[groupType.value].length) {
         document.getElementById("all").checked = true;
