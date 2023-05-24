@@ -8,8 +8,11 @@
             <div class="channel_list" v-if="api.type === 1">
                 <div class="channel_bar">
                     <span>通路</span>
-                    <input type="checkbox" name="allChannel" id="allChannel" @click="selectAllChannel($event)">
-                    <label for="allChannel">全選</label>
+                    <div>
+                        <input type="checkbox" name="allChannel" id="allChannel" @click="selectAllChannel($event)">
+                        <label for="allChannel">全選</label>
+                        <div class="send" @click="api.callChannelData()">送出</div>
+                    </div>
                 </div>
                 <div v-for="(item, index) in channelArr" class="channel_btn">
                     <input type="checkbox" :id="item.id" :value="item.id" v-model="api.channelModel"
@@ -28,12 +31,11 @@
                 </div>
                 <div class="group_bar">
                     <span>群組</span>
-                    <input type="checkbox" name="all" id="all" @click="selectAllGroup($event)">
-                    <label for="all">全選</label>
-                    <!-- <div class="tab opt3" data="Option 1">
-                        <input type="checkbox" name="switch" id="switch" @click="selectAll($event)">
-                        <label for="switch" name="switch"></label>
-                    </div> -->
+                    <div>
+                        <input type="checkbox" name="all" id="all" @click="selectAllGroup($event)">
+                        <label for="all">全選</label>
+                        <div class="send" @click="api.callGroupData()">送出</div>
+                    </div>
                 </div>
                 <ul class="check_list">
                     <li v-for="(item, index) in groupList[groupType]">

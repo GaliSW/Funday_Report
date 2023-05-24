@@ -25,11 +25,15 @@ export const useApiStore = defineStore("apiStore", () => {
         joinMB: 0,
         joinPC: 0,
         joinTotal: 0,
+        joinPCCR: 0,
+        joinMBCR: 0,
     }); //註冊相關總數
     const totalSalesData = ref({
         salesContract: 0,
         salesDemo: 0,
+        salesDemoCR: 0,
         contractCR: 0,
+        salesAmount: 0,
     }); //電銷相關總數
 
     //report select store
@@ -47,11 +51,15 @@ export const useApiStore = defineStore("apiStore", () => {
         joinMB: 0,
         joinPC: 0,
         joinTotal: 0,
+        joinPCCR: 0,
+        joinMBCR: 0,
     }); //註冊相關總數
     const totalAdsSalesData = ref({
         salesContract: 0,
         salesDemo: 0,
+        salesDemoCR: 0,
         contractCR: 0,
+        salesAmount: 0,
     }); //電銷相關總數
 
     //Get NavList
@@ -82,10 +90,13 @@ export const useApiStore = defineStore("apiStore", () => {
             }
             axios
                 .get(
-                    `https://mktapi.funday.asia:4433/MKT/report/channel-list?sdate=${start}&edate=${end}&channelId=${idArr}`
+                    `https://mktapi.funday.asia:4433/MKT/report/v2/channel-list?sdate=${start}&edate=${end}&channelId=${idArr}`
                 )
                 .then((res) => {
                     channelData.value = res.data.channel;
+                    channelData.value.sort((a, b) => {
+                        return a.id < b.id ? 1 : -1;
+                    });
                     resolve();
                 });
         });
@@ -123,10 +134,13 @@ export const useApiStore = defineStore("apiStore", () => {
             }
             axios
                 .get(
-                    `https://mktapi.funday.asia:4433/MKT/report/channel-list-s?sdate=${startL}&edate=${endL}&sdate2=${startR}&edate2=${endR}&channelId=${idArr}`
+                    `https://mktapi.funday.asia:4433/MKT/report/v2/channel-list-s?sdate=${startL}&edate=${endL}&sdate2=${startR}&edate2=${endR}&channelId=${idArr}`
                 )
                 .then((res) => {
                     channelSalesData.value = res.data.channel;
+                    channelSalesData.value.sort((a, b) => {
+                        return a.id < b.id ? 1 : -1;
+                    });
                     resolve();
                 });
         });
@@ -141,57 +155,37 @@ export const useApiStore = defineStore("apiStore", () => {
         await getChannelSalesData();
         await getChannelTotal();
 
-        //註冊資料
-        reportChannelData.value = [];
-        let channelArr = [];
-        if (channelData.value !== undefined) {
-            for (let i = 0; i < channelModel.value.length; i++) {
-                if (channelData.value[i]) {
-                    if (channelData.value[i].id === channelModel.value[i]) {
-                        channelArr = [...channelArr, channelData.value[i]];
-                    }
-                }
-            }
-            reportChannelData.value = channelArr;
-        }
-
-        //電銷數據
-        reportChannelSalesData.value = [];
-        let channelSalesArr = [];
-        for (let i = 0; i < channelModel.value.length; i++) {
-            if (channelSalesData.value[i]) {
-                if (channelSalesData.value[i].id === channelModel.value[i]) {
-                    channelSalesArr = [
-                        ...channelSalesArr,
-                        channelSalesData.value[i],
-                    ];
-                    channelSalesArr[i]["contractCR"] =
-                        (channelSalesArr[i].salesContract /
-                            reportChannelData.value[i].joinTotal) *
-                        100;
-                }
-            }
-        }
-
         //兩組資料合併
         reportChannelMixData.value = [];
-        reportChannelSalesData.value = channelSalesArr;
-        reportChannelData.value.forEach((el, indx) => {
+        channelData.value.forEach((el, indx) => {
             reportChannelMixData.value.push(
-                Object.assign(el, reportChannelSalesData.value[indx])
+                Object.assign(el, channelSalesData.value[indx])
             );
         });
         reportChannelMixData.value.sort((a, b) => {
             return a.joinTotal < b.joinTotal ? 1 : -1;
+        });
+        reportChannelMixData.value.forEach((el) => {
+            const cr = (el.salesContract / el.joinTotal) * 100;
+            if (isNaN(cr)) {
+                el["contractCR"] = 0;
+            } else {
+                el["contractCR"] = cr;
+            }
+            const demoCR = (el.salesDemo / el.joinTotal) * 100;
+            if (isNaN(demoCR)) {
+                el["salesDemoCR"] = 0;
+            } else {
+                el["salesDemoCR"] = demoCR;
+            }
         });
         chart.value = true;
         loader.value = false;
     };
 
     watch(channelModel, () => {
-        if (channelModel.value.length > 0) {
-            callChannelData();
-        } else {
+        if (channelModel.value.length === 0) {
+            // callChannelData();
             reportChannelMixData.value = [];
             reportChannelSalesData.value = [];
             totalData.value = {
@@ -207,6 +201,7 @@ export const useApiStore = defineStore("apiStore", () => {
                 salesContract: 0,
                 salesDemo: 0,
                 contractCR: 0,
+                salesAmount: 0,
             };
             chart.value = false;
         }
@@ -228,10 +223,13 @@ export const useApiStore = defineStore("apiStore", () => {
             }
             axios
                 .get(
-                    `https://mktapi.funday.asia:4433/MKT/report/group-list?sdate=${start}&edate=${end}&groupId=${idArr}`
+                    `https://mktapi.funday.asia:4433/MKT/report/v2/group-list?sdate=${start}&edate=${end}&groupId=${idArr}`
                 )
                 .then((res) => {
-                    adsData.value = res.data.ad;
+                    console.log(res);
+                    adsData.value = res.data.ad.sort((a, b) => {
+                        return a.adId < b.adId ? 1 : -1;
+                    });
                     resolve();
                 });
         });
@@ -269,10 +267,13 @@ export const useApiStore = defineStore("apiStore", () => {
             }
             axios
                 .get(
-                    `https://mktapi.funday.asia:4433/MKT/report/group-list-s?sdate=${startL}&edate=${endL}&sdate2=${startR}&edate2=${endR}&groupId=${idArr}`
+                    `https://mktapi.funday.asia:4433/MKT/report/v2/group-list-s?sdate=${startL}&edate=${endL}&sdate2=${startR}&edate2=${endR}&groupId=${idArr}`
                 )
                 .then((res) => {
                     adsSalesData.value = res.data.ad;
+                    adsSalesData.value.sort((a, b) => {
+                        return a.adId < b.adId ? 1 : -1;
+                    });
                     resolve();
                 });
         });
@@ -287,50 +288,30 @@ export const useApiStore = defineStore("apiStore", () => {
         await getGroupSalesData();
         await getGroupTotal();
 
-        //註冊資料
-        reportAdsData.value = [];
-        let adsArr = [];
-        if (adsData.value !== undefined) {
-            for (let i = 0; i < groupModel.value.length; i++) {
-                for (let j = 0; j < adsData.value.length; j++) {
-                    if (adsData.value[j].groupId === groupModel.value[i]) {
-                        adsArr = [...adsArr, adsData.value[j]];
-                    }
-                }
-            }
-            reportAdsData.value = adsArr;
-        }
-
-        //電銷數據
-        reportAdsSalesData.value = [];
-        let adsSalesArr = [];
-        for (let i = 0; i < groupModel.value.length; i++) {
-            for (let j = 0; j < adsData.value.length; j++) {
-                if (adsSalesData.value[j]) {
-                    if (adsSalesData.value[j].groupId === groupModel.value[i]) {
-                        adsSalesArr = [...adsSalesArr, adsSalesData.value[j]];
-                        // adsSalesArr[j]["contractCR"] =
-                        //     (adsSalesArr[j].salesContract /
-                        //         reportAdsData.value[j].joinTotal) *
-                        //     100;
-                    }
-                }
-            }
-        }
-
         //兩組資料合併
         reportAdsMixData.value = [];
-        reportAdsSalesData.value = adsSalesArr;
-        reportAdsData.value.forEach((el, indx) => {
+        adsData.value.forEach((el, indx) => {
             reportAdsMixData.value.push(
-                Object.assign(el, reportAdsSalesData.value[indx])
+                Object.assign(el, adsSalesData.value[indx])
             );
         });
+
         reportAdsMixData.value.sort((a, b) => {
             return a.joinTotal < b.joinTotal ? 1 : -1;
         });
         reportAdsMixData.value.forEach((el) => {
-            el["contractCR"] = (el.salesContract / el.joinTotal) * 100;
+            const cr = (el.salesContract / el.joinTotal) * 100;
+            if (isNaN(cr)) {
+                el["contractCR"] = 0;
+            } else {
+                el["contractCR"] = cr;
+            }
+            const demoCR = (el.salesDemo / el.joinTotal) * 100;
+            if (isNaN(demoCR)) {
+                el["salesDemoCR"] = 0;
+            } else {
+                el["salesDemoCR"] = demoCR;
+            }
         });
 
         chart.value = true;
@@ -338,9 +319,8 @@ export const useApiStore = defineStore("apiStore", () => {
     };
 
     watch(groupModel, () => {
-        if (groupModel.value.length > 0) {
-            callGroupData();
-        } else {
+        if (groupModel.value.length === 0) {
+            // callGroupData();
             reportAdsMixData.value = [];
             reportAdsSalesData.value = [];
             totalAdsData.value = {
@@ -356,6 +336,7 @@ export const useApiStore = defineStore("apiStore", () => {
                 salesContract: 0,
                 salesDemo: 0,
                 contractCR: 0,
+                salesAmount: 0,
             };
             chart.value = false;
         }
@@ -424,6 +405,12 @@ export const useApiStore = defineStore("apiStore", () => {
                             100;
                         totalSalesData.value = res.data.data[0];
                         totalSalesData.value["contractCR"] = contractCR;
+                        const demoCR =
+                            (res.data.data[0].salesDemo /
+                                totalData.value.joinTotal) *
+                            100;
+                        totalSalesData.value = res.data.data[0];
+                        totalSalesData.value["salesDemoCR"] = demoCR;
                     }
                     resolve();
                 });
@@ -496,6 +483,12 @@ export const useApiStore = defineStore("apiStore", () => {
                             100;
                         totalAdsSalesData.value = res.data.data[0];
                         totalAdsSalesData.value["contractCR"] = contractCR;
+                        const demoCR =
+                            (res.data.data[0].salesDemo /
+                                totalAdsData.value.joinTotal) *
+                            100;
+                        totalAdsSalesData.value = res.data.data[0];
+                        totalAdsSalesData.value["salesDemoCR"] = demoCR;
                     }
                     resolve();
                 });
