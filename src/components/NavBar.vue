@@ -4,6 +4,7 @@
             <img src="@/assets/images/FUNDAYLOGO.png" alt="">
             <h1>廣告成效報表</h1>
         </div>
+        <div class="update" @click="api.updateData">更新數據</div>
         <div class="channel">
             <div class="channel_list" v-if="api.type === 1">
                 <div class="channel_bar">
@@ -24,7 +25,9 @@
                 </div>
             </div>
             <div class="group_list" v-else>
-                <div class="back" @click="api.type = 1">回上層</div>
+                <div class="back" @click="api.type = 1">
+                    回上層
+                </div>
                 <div class="channel_blk">
                     <span>通路名稱:</span><br>
                     <p>{{ channelArr[groupType].name }}</p>

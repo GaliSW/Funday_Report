@@ -166,8 +166,8 @@
                                 {{ item.adName }}
                             </td>
                             <td>{{ item.clicksTotal }}<br>{{ item.clicksPC }}&nbsp;/&nbsp;{{ item.clicksMB }}</td>
-                            <td>{{ item.joinTotal }}<br>{{ item.joinPC }}&nbsp;/&nbsp;{{
-                                item.joinMB }}</td>
+                            <td class="view" @click="callLineChart(item.adId)">{{ item.joinTotal }}<br>{{ item.joinPC
+                            }}&nbsp;/&nbsp;{{ item.joinMB }}</td>
                             <td :class="[{ red: item.joinCR < 1 }, { green: item.joinCR > 2 }]">
                                 {{ item.joinCR.toFixed(2) + '%' }}<br>
                                 {{ item.joinPCCR.toFixed(2) + '%' }}&nbsp;/&nbsp;{{ item.joinMBCR.toFixed(2) + '%' }}
@@ -291,10 +291,12 @@
                     <tbody>
                         <tr v-for="(item, index) in api.reportChannelMixData" v-if="api.type === 1">
                             <td>{{ item.salesDemo }}</td>
-                            <td>{{ item.salesDemoCR.toFixed(2) }}%</td>
+                            <td v-if="item.salesDemoCR == 'Infinity'">-</td>
+                            <td v-if="item.salesDemoCR >= 0 && item.salesDemoCR != 'Infinity'">
+                                {{ item.salesDemoCR.toFixed(2) }}%
+                            </td>
                             <td>{{ item.salesContract }}</td>
                             <td>${{ numberFormat(item.salesAmount) }}</td>
-                            <td v-if="isNaN(item.contractCR)">0.00%</td>
                             <td v-if="item.contractCR == 'Infinity'">-</td>
                             <td v-if="item.contractCR >= 0 && item.contractCR != 'Infinity'">
                                 {{ item.contractCR.toFixed(2) }}%
@@ -302,7 +304,10 @@
                         </tr>
                         <tr v-for="(item, index) in api.reportAdsMixData" v-else>
                             <td>{{ item.salesDemo }}</td>
-                            <td>{{ item.salesDemoCR.toFixed(2) }}%</td>
+                            <td v-if="item.salesDemoCR == 'Infinity'">-</td>
+                            <td v-if="item.salesDemoCR >= 0 && item.salesDemoCR != 'Infinity'">
+                                {{ item.salesDemoCR.toFixed(2) }}%
+                            </td>
                             <td>{{ item.salesContract }}</td>
                             <td>${{ numberFormat(item.salesAmount) }}</td>
                             <td v-if="isNaN(item.contractCR)">0.00%</td>
@@ -419,10 +424,10 @@ const channel_amount_sort = ref(0)
 const channel_contractCR_sort = ref(0)
 
 const chartOpen = ref(false)
-const lineNameArr = ref([1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
-const lineResultArr = ref([1, 100, 3, 30, 50, 30, 75, 2, 56, 10, 3])
-const linePcResultArr = ref([10, 90, 1, 10, 40, 10, 35, 1, 36, 8, 7])
-const lineMbResultArr = ref([7, 60, 9, 20, 10, 6, 27, 0, 28, 6, 1])
+const lineNameArr = ref([])
+const lineResultArr = ref([])
+const linePcResultArr = ref([])
+const lineMbResultArr = ref([])
 
 
 const lineData = computed(() => ({
@@ -480,7 +485,7 @@ const lineOptions = ref({
             }
         },
         datalabels: {
-            display: true,
+            display: false,
             align: 'end',
             anchor: "center",
             color: "rgb(221, 113, 126)",
@@ -512,12 +517,9 @@ watch(groupModel, () => {
     channel_sort_type.value = "";
 })
 
-watch(memberDate, () => {
+watch(memberDate, async () => {
     startDate.value = memberDate.value[0];
     salesDate.value = [memberDate.value[0], memberDate.value[1]];
-    if (memberDate.value[1].getTime() + 86400000 < new Date().getTime()) {
-        canNext.value = true;
-    }
     if (memberDate.value[1]) {
         api.sDate = memberDate.value[0];
         api.eDate = memberDate.value[1];
@@ -531,8 +533,11 @@ watch(memberDate, () => {
         api.sDateSales = memberDate.value[0];
         api.eDateSales = memberDate.value[0];
     }
+    if (memberDate.value[1].getTime() + 86400000 < new Date().getTime()) {
+        canNext.value = true;
+    }
     if (api.type === 1) {
-        api.callChannelData();
+        await api.callChannelData();
     } else {
         api.callGroupData();
     }
@@ -545,11 +550,11 @@ watch(salesDate, () => {
         api.sDateSales = salesDate.value[0];
         api.eDateSales = salesDate.value[0];
     }
-    if (api.type === 1) {
-        api.callChannelData();
-    } else {
-        api.callGroupData();
-    }
+    // if (api.type === 1) {
+    //     api.callChannelData();
+    // } else {
+    //     api.callGroupData();
+    // }
 })
 
 
@@ -747,8 +752,21 @@ const prevAdsDate = () => {
 }
 
 
-const callLineChart = () => {
-    chartOpen.value = true
+const callLineChart = async (id) => {
+    api.loader = true;
+    lineNameArr.value = [];
+    lineResultArr.value = [];
+    linePcResultArr.value = [];
+    lineMbResultArr.value = [];
+    await api.getLineData(id);
+    api.lineData.forEach((el) => {
+        lineNameArr.value.push(el.date);
+        lineResultArr.value.push(el.joinTotal);
+        linePcResultArr.value.push(el.joinPC);
+        lineMbResultArr.value.push(el.joinMB);
+    })
+    api.loader = false;
+    chartOpen.value = true;
 }
 
 </script>

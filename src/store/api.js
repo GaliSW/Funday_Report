@@ -36,6 +36,8 @@ export const useApiStore = defineStore("apiStore", () => {
         salesAmount: 0,
     }); //電銷相關總數
 
+    const lineData = ref([]);
+
     //report select store
     const reportChannelData = ref([]);
     const reportChannelSalesData = ref([]);
@@ -92,10 +94,10 @@ export const useApiStore = defineStore("apiStore", () => {
                 .get(
                     `https://mktapi.funday.asia:4433/MKT/report/v2/channel-list?sdate=${start}&edate=${end}&channelId=${idArr}`
                 )
-                .then((res) => {
-                    channelData.value = res.data.channel;
+                .then(async (res) => {
+                    channelData.value = await res.data.channel;
                     channelData.value.sort((a, b) => {
-                        return a.id < b.id ? 1 : -1;
+                        return a.id > b.id ? 1 : -1;
                     });
                     resolve();
                 });
@@ -136,10 +138,10 @@ export const useApiStore = defineStore("apiStore", () => {
                 .get(
                     `https://mktapi.funday.asia:4433/MKT/report/v2/channel-list-s?sdate=${startL}&edate=${endL}&sdate2=${startR}&edate2=${endR}&channelId=${idArr}`
                 )
-                .then((res) => {
-                    channelSalesData.value = res.data.channel;
+                .then(async (res) => {
+                    channelSalesData.value = await res.data.channel;
                     channelSalesData.value.sort((a, b) => {
-                        return a.id < b.id ? 1 : -1;
+                        return a.id > b.id ? 1 : -1;
                     });
                     resolve();
                 });
@@ -148,39 +150,54 @@ export const useApiStore = defineStore("apiStore", () => {
 
     //set all channel data
     const callChannelData = async () => {
-        if (channelModel.value.length === 0) return;
-        chart.value = false;
-        loader.value = true;
-        await getChannelData();
-        await getChannelSalesData();
-        await getChannelTotal();
+        return new Promise(async (resolve, reject) => {
+            if (channelModel.value.length === 0) return;
+            chart.value = false;
+            loader.value = true;
+            await getChannelData();
+            await getChannelSalesData();
+            await getChannelTotal();
 
-        //兩組資料合併
-        reportChannelMixData.value = [];
-        channelData.value.forEach((el, indx) => {
-            reportChannelMixData.value.push(
-                Object.assign(el, channelSalesData.value[indx])
-            );
+            //兩組資料合併
+            reportChannelMixData.value = [];
+            await channelCombine();
+            setTimeout(() => {
+                reportChannelMixData.value.sort((a, b) => {
+                    return a.joinTotal < b.joinTotal ? 1 : -1;
+                });
+                loader.value = false;
+            }, 2000);
+            chart.value = true;
+            resolve();
         });
-        reportChannelMixData.value.sort((a, b) => {
-            return a.joinTotal < b.joinTotal ? 1 : -1;
-        });
-        reportChannelMixData.value.forEach((el) => {
-            const cr = (el.salesContract / el.joinTotal) * 100;
-            if (isNaN(cr)) {
-                el["contractCR"] = 0;
-            } else {
-                el["contractCR"] = cr;
+    };
+
+    const channelCombine = () => {
+        return new Promise(async (resolve, reject) => {
+            for (let i in channelData.value) {
+                const res = await Object.assign(
+                    channelData.value[i],
+                    channelSalesData.value[i]
+                );
+                reportChannelMixData.value.push(res);
             }
-            const demoCR = (el.salesDemo / el.joinTotal) * 100;
-            if (isNaN(demoCR)) {
-                el["salesDemoCR"] = 0;
-            } else {
-                el["salesDemoCR"] = demoCR;
+            for (let i in reportChannelMixData.value) {
+                const el = reportChannelMixData.value[i];
+                const cr = (el.salesContract / el.joinTotal) * 100;
+                if (isNaN(cr)) {
+                    el["contractCR"] = 0;
+                } else {
+                    el["contractCR"] = cr;
+                }
+                const demoCR = (el.salesDemo / el.joinTotal) * 100;
+                if (isNaN(demoCR)) {
+                    el["salesDemoCR"] = 0;
+                } else {
+                    el["salesDemoCR"] = demoCR;
+                }
             }
+            resolve();
         });
-        chart.value = true;
-        loader.value = false;
     };
 
     watch(channelModel, () => {
@@ -226,7 +243,6 @@ export const useApiStore = defineStore("apiStore", () => {
                     `https://mktapi.funday.asia:4433/MKT/report/v2/group-list?sdate=${start}&edate=${end}&groupId=${idArr}`
                 )
                 .then((res) => {
-                    console.log(res);
                     adsData.value = res.data.ad.sort((a, b) => {
                         return a.adId < b.adId ? 1 : -1;
                     });
@@ -290,37 +306,46 @@ export const useApiStore = defineStore("apiStore", () => {
 
         //兩組資料合併
         reportAdsMixData.value = [];
-        adsData.value.forEach((el, indx) => {
-            reportAdsMixData.value.push(
-                Object.assign(el, adsSalesData.value[indx])
-            );
-        });
-
-        reportAdsMixData.value.sort((a, b) => {
-            return a.joinTotal < b.joinTotal ? 1 : -1;
-        });
-        reportAdsMixData.value.forEach((el) => {
-            const cr = (el.salesContract / el.joinTotal) * 100;
-            if (isNaN(cr)) {
-                el["contractCR"] = 0;
-            } else {
-                el["contractCR"] = cr;
-            }
-            const demoCR = (el.salesDemo / el.joinTotal) * 100;
-            if (isNaN(demoCR)) {
-                el["salesDemoCR"] = 0;
-            } else {
-                el["salesDemoCR"] = demoCR;
-            }
-        });
-
+        await groupCombine();
+        setTimeout(() => {
+            reportAdsMixData.value.sort((a, b) => {
+                return a.joinTotal < b.joinTotal ? 1 : -1;
+            });
+            loader.value = false;
+        }, 2000);
         chart.value = true;
-        loader.value = false;
+    };
+
+    const groupCombine = () => {
+        return new Promise(async (resolve, reject) => {
+            for (let i in adsData.value) {
+                const res = await Object.assign(
+                    adsData.value[i],
+                    adsSalesData.value[i]
+                );
+                reportAdsMixData.value.push(res);
+            }
+            for (let i in reportAdsMixData.value) {
+                const el = reportAdsMixData.value[i];
+                const cr = (el.salesContract / el.joinTotal) * 100;
+                if (isNaN(cr)) {
+                    el["contractCR"] = 0;
+                } else {
+                    el["contractCR"] = cr;
+                }
+                const demoCR = (el.salesDemo / el.joinTotal) * 100;
+                if (isNaN(demoCR)) {
+                    el["salesDemoCR"] = 0;
+                } else {
+                    el["salesDemoCR"] = demoCR;
+                }
+            }
+            resolve();
+        });
     };
 
     watch(groupModel, () => {
         if (groupModel.value.length === 0) {
-            // callGroupData();
             reportAdsMixData.value = [];
             reportAdsSalesData.value = [];
             totalAdsData.value = {
@@ -522,6 +547,41 @@ export const useApiStore = defineStore("apiStore", () => {
         loader.value = false;
     };
 
+    //*========= 更新數據 ========
+    const updateData = () => {
+        loader.value = true;
+        axios
+            .get(`https://mktapi.funday.asia:4433/MKT/report/v2/dataUpdate`)
+            .then((res) => {
+                if (res.data.state == "Finish") {
+                    location.reload();
+                }
+            });
+    };
+
+    //*========= 折線圖 ========
+    const getLineData = (id) => {
+        return new Promise((resolve, reject) => {
+            const s = sDate.value;
+            const e = eDate.value;
+            let start = `${s.getFullYear()}-${s.getMonth() + 1}-${s.getDate()}`;
+            let end;
+            if (e) {
+                end = `${e.getFullYear()}-${e.getMonth() + 1}-${e.getDate()}`;
+            } else {
+                end = start;
+            }
+            axios
+                .get(
+                    `https://mktapi.funday.asia:4433/MKT/report/v2/lineChat?sdate=${start}&edate=${end}&adId=${id}`
+                )
+                .then((res) => {
+                    lineData.value = res.data.data;
+                    resolve();
+                });
+        });
+    };
+
     return {
         type,
         loader,
@@ -548,9 +608,12 @@ export const useApiStore = defineStore("apiStore", () => {
         callChannelData,
         callGroupData,
         fnChannleSort,
+        updateData,
+        getLineData,
         channelData,
         sDateSales,
         eDateSales,
         chart,
+        lineData,
     };
 });

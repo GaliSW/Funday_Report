@@ -273,6 +273,9 @@ watch(chartCanDraw, () => {
 const setChart = async () => {
     if (api.type === 1) {
         reportData.value = api.reportChannelMixData;
+        reportData.value.sort((a, b) => {
+            return a.joinTotal < b.joinTotal ? 1 : -1;
+        });
         reportData.value.forEach((el, num) => {
             bar2NameArr.value.push(`${num + 1}.${el.name}`)
             bar2ResultArr.value.push(el.joinTotal)
@@ -292,7 +295,10 @@ const setChart = async () => {
         })
     } else {
         reportData.value = api.reportAdsMixData;
-        api.reportAdsMixData.forEach((el, indx) => {
+        reportData.value.sort((a, b) => {
+            return a.joinTotal < b.joinTotal ? 1 : -1;
+        });
+        reportData.value.forEach((el, indx) => {
             if (indx > 9) return;
             bar2NameArr.value.push(`${indx + 1}.${el.adName}`)
             bar2ResultArr.value.push(el.joinTotal)

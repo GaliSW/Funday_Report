@@ -134,6 +134,9 @@
             z-index: 2;
             background-color: #002062;
         }
+        table .view{
+            cursor:zoom-in;
+        }
         table .lock_bottom{
             position: sticky;
             bottom: 0px;
